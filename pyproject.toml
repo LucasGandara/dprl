@@ -1,7 +1,9 @@
 [project]
 name = "dprl"
 version = "0.1.0"
-description = "Add your description here"
+description = "Deep reinforcement learning framework"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "mkdocs>=1.6.1",
+]

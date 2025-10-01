@@ -1,0 +1,20 @@
+site_name: DPRL - Deep Reinforcement Learning Toolkit
+site_description: A comprehensive reinforcement learning toolkit with state-of-the-art algorithms and CLI interface
+site_author: Lucas Gandara
+site_url: https://lucasgandara.github.io/dprl
+
+repo_name: LucasGandara/dprl
+repo_url: https://github.com/LucasGandara/dprl
+
+nav:
+  - Home: index.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/LucasGandara
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/dprl/
+
+theme:
+  name: readthedocs
