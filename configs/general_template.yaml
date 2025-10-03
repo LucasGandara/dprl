@@ -1,0 +1,20 @@
+# General Configuration Template for DPRL
+# Copy and modify this file for your specific use case
+
+environment:
+  name: CartPole-v1  # Environment name (e.g., CartPole-v1, LunarLander-v2)
+  render_mode: null  # Render mode: null, 'human', 'rgb_array'
+
+training:
+  timesteps: 100000      # Total training timesteps
+  save_frequency: 10000  # Save model every N timesteps
+  eval_frequency: 5000   # Evaluate model every N timesteps
+  eval_episodes: 10      # Number of episodes for evaluation
+
+logging:
+  log_dir: ./logs     # Directory for log files
+  tensorboard: true   # Enable TensorBoard logging
+  wandb: false        # Enable Weights & Biases logging
+
+# Algorithm-specific configuration will be merged with this template
+# See algorithm-specific config files for detailed parameters

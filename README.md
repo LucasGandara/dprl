@@ -30,7 +30,7 @@ pip install -e .
 ### Prerequisites
 
 - Python 3.13 or higher
-- pip package manager
+- uv package manager
 
 ## 🎯 Quick Start
 
@@ -80,19 +80,12 @@ print(f"Average reward: {sum(rewards) / len(rewards):.2f}")
 
 ### Value-Based Methods
 - **DQN** (Deep Q-Network)
-- **Double DQN**
-- **Dueling DQN**
-- **Rainbow DQN**
 
 ### Policy-Based Methods
-- **REINFORCE**
 - **Actor-Critic**
 - **PPO** (Proximal Policy Optimization)
 - **A2C** (Advantage Actor-Critic)
 
-### Model-Based Methods
-- **MCTS** (Monte Carlo Tree Search)
-- **Dyna-Q**
 
 ## 🎮 Supported Environments
 
@@ -175,7 +168,6 @@ training:
 
 logging:
   tensorboard: true
-  wandb: false
 ```
 
 Use configuration files with:
@@ -186,7 +178,6 @@ dprl train --config config.yaml
 ## 📈 Monitoring and Visualization
 
 - **TensorBoard Integration**: Real-time training metrics visualization
-- **Weights & Biases Support**: Experiment tracking and comparison
 - **Custom Plotting**: Built-in plotting utilities for performance analysis
 
 ## 🤝 Contributing
@@ -211,7 +202,6 @@ black dprl/
 
 ## 📚 Documentation
 
-- [API Documentation](docs/api.md)
 - [Algorithm Implementations](docs/algorithms.md)
 - [Custom Environments](docs/environments.md)
 - [Examples and Tutorials](examples/)
@@ -231,10 +221,6 @@ black dprl/
    ```
 
 3. **CUDA/GPU Issues**: Ensure proper PyTorch installation for your system
-   ```bash
-   # For CUDA 11.8
-   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-   ```
 
 ## 📄 License
 
@@ -243,7 +229,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - OpenAI Gymnasium team for the environment standards
-- Stable Baselines3 for algorithm inspiration
 - Click team for the excellent CLI framework
 
 ## 📬 Contact

@@ -1,0 +1,28 @@
+# PPO Configuration for LunarLander-v2
+algorithm: ppo
+environment:
+  name: LunarLander-v2
+  render_mode: null
+
+network:
+  hidden_layers: [64, 64]
+  activation: tanh
+
+training:
+  learning_rate: 0.0003
+  batch_size: 64
+  n_epochs: 10
+  clip_range: 0.2
+  gae_lambda: 0.95
+  value_coef: 0.5
+  entropy_coef: 0.01
+  gamma: 0.99
+  timesteps: 1000000
+  save_frequency: 50000
+  eval_frequency: 10000
+  eval_episodes: 10
+
+logging:
+  log_dir: ./logs
+  tensorboard: true
+  wandb: false
