@@ -8,6 +8,7 @@ repo_url: https://github.com/LucasGandara/dprl
 
 nav:
   - Home: index.md
+  - TODOs: todo.md
 
 extra:
   social:

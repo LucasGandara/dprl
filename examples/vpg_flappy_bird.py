@@ -31,7 +31,10 @@ else:
 @click.option("--epochs", default=50, help="Number of epochs to train for.")
 @click.option("--lr", default=0.001, help="Learning rate.")
 @click.option(
-    "--hidden-layer-units", default=2, help="Number of units in the hidden layer."
+    "--hidden-layer-units",
+    default=4,
+    type=int,
+    help="Number of units in the hidden layer.",
 )
 @click.option(
     "--advantage-expression",
