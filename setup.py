@@ -10,10 +10,11 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     install_requires=[
-        "numpy",
-        "gymnasium",
-        "torch",
-        "click",
+        "click>=8.0.0",
+        "numpy>=1.24.0",
+        "torch>=2.0.0",
+        "gymnasium[classic-control]>=0.29.0",
+        "pyyaml>=6.0",
     ],
     python_requires=">=3.13",
 )
