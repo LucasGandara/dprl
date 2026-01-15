@@ -95,8 +95,9 @@ def vpg_cartpole(
 
     env = gymnasium.make("CartPole-v1", render_mode="human")
 
+    input("Press Enter to watch the trained agent...")
     for _ in range(2):
-        collect_trajectory(env, value_function)
+        collect_trajectory(env, value_function, device=device)
 
 
 if __name__ == "__main__":
