@@ -8,9 +8,13 @@ After 500 epochs the agent performs well
 # Date: 2025-10-03
 """
 
+import pathlib
+
 import click
 import gymnasium
+import numpy as np
 import torch
+from moviepy.video.io import ImageSequenceClip
 
 from dprl.algorithms.vpg import AdvantageExpression, calculate_advantages
 from dprl.algorithms.vpg.vpg_utils import (
@@ -18,6 +22,7 @@ from dprl.algorithms.vpg.vpg_utils import (
     collect_trajectory,
     create_value_function,
 )
+from dprl.utils import save_experiment_details
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 if device == "cuda":
@@ -37,9 +42,7 @@ else:
     default="reward_to_go",
     help="Advantage expression to use.",
 )
-def vpg_cartpole(
-    epochs, hidden_layer_units, lr, advantage_expression
-) -> torch.nn.Module:
+def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> None:
     """Train a VPG agent on CartPole."""
     assert advantage_expression in [
         e.value for e in AdvantageExpression
@@ -51,12 +54,17 @@ def vpg_cartpole(
 
     env = gymnasium.make("CartPole-v1", render_mode=None)
 
-    # Setup step
+    # 0. Setup step
     assert isinstance(env.action_space, gymnasium.spaces.Discrete)
     assert isinstance(env.observation_space, gymnasium.spaces.Box)
 
     input_size = env.observation_space.shape[0]
-    output_size = env.action_space.n
+    output_size = int(env.action_space.n)
+
+    # 0.1 Variables to log
+    trajectory_rewards_history = []
+    trajectory_losses_history = []
+    trajectory_advantages_history = []
 
     # 1. Input: initial policy parameters theta(0), initial value function parameters phi(0)
     # Neutal network is going to replace the value function.
@@ -69,6 +77,7 @@ def vpg_cartpole(
     for epoch in range(epochs):
         # 3: Collect a set of trajectories.
         trajectory = collect_trajectory(env, value_function, device)
+        trajectory_rewards_history.append(np.sum(trajectory.rewards))
 
         # 4. Calculate rewards to go
         rewards_to_go = calculate_rewards_to_go(trajectory.rewards)
@@ -81,10 +90,12 @@ def vpg_cartpole(
             advantage_expression=AdvantageExpression(advantage_expression),
         )
         advantages = torch.as_tensor(advantages).to(device)
+        trajectory_advantages_history.append(advantages.cpu().numpy().sum())
 
         # 6. Estimate policy gradients
         log_values = torch.stack(trajectory.log_values).to(device)
         loss = -torch.mean(log_values * advantages)
+        trajectory_losses_history.append(loss.item())
 
         # 7. Compute policy update
         loss.backward()
@@ -93,11 +104,44 @@ def vpg_cartpole(
 
         print(f"Epoch {epoch}, steps: {len(trajectory.rewards)}, Loss: {loss.item()}")
 
-    env = gymnasium.make("CartPole-v1", render_mode="human")
+        if len(trajectory.rewards) > 5000:
+            break
+
+    env = gymnasium.make("CartPole-v1", render_mode="rgb_array")
+
+    # Collect frames
+    frames = []
+    done = False
+    observation, _ = env.reset()
+    while not done:
+        observation_as_tensor = torch.as_tensor(observation, dtype=torch.float32).to(
+            device
+        )
+        value = value_function(observation_as_tensor)
+        policy = torch.distributions.Categorical(logits=value)
+        action = policy.sample().item()
+
+        observation, _, terminated, _, _ = env.step(action)
+        frame = env.render()
+        frames.append(frame)
+
+        if terminated:
+            done = True
+
+    save_experiment_details(
+        name="vpg",
+        policy=value_function,
+        aditional_data={
+            "rewards": np.array(trajectory_rewards_history),
+            "losses": np.array(trajectory_losses_history),
+            "advantages": np.array(trajectory_advantages_history),
+            "frames": np.array(frames),
+        },
+    )
 
     input("Press Enter to watch the trained agent...")
-    for _ in range(2):
-        collect_trajectory(env, value_function, device=device)
+    env = gymnasium.make("CartPole-v1", render_mode="human")
+    collect_trajectory(env, value_function, device=device)
 
 
 if __name__ == "__main__":

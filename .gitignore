@@ -12,3 +12,7 @@ wheels/
 #mkdocs
 site
 
+# Experiment logs
+runs/
+examples/runs/
+examples/assets/
