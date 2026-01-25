@@ -1,0 +1,16 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "vpg cartpole from saved model",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/vpg_cartpole_from_saved_model.py",
+            "args": ["--model-path", "./runs/exp_vpg_20260118_093525/policy.tar", "--episodes", "1"],
+            "console": "integratedTerminal"
+        }
+    ]
+}

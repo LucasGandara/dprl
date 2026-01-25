@@ -30,6 +30,12 @@ dependencies = [
     "torch>=2.0.0",
     "gymnasium[classic-control]>=0.29.0",
     "pyyaml>=6.0",
+    "pydantic>=2.12.5",
+    "rich>=14.2.0",
+    "plotly>=6.5.2",
+    "pandas>=2.3.3",
+    "dash>=3.3.0",
+    "moviepy>=2.2.1",
 ]
 
 [project.optional-dependencies]
