@@ -1,12 +1,13 @@
 import os
 import pickle
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import numpy as np
+import numpy.typing as npt
 import rich
 import torch
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
@@ -15,12 +16,26 @@ BASE_DIR = "runs"
 
 
 class CheckpointMetadata(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="forbid",
+        json_encoders={
+            np.ndarray: lambda v: v.tolist(),
+        },
+    )
 
-    policy_state_dict: dict[str, Any]
-    rewards: Optional[np.typing.NDArray[Any]]
-    losses: Optional[np.typing.NDArray[Any]]
-    frames: Optional[np.typing.NDArray[Any]]
+    policy_state_dict: Dict[str, Any]
+    rewards: Optional[npt.NDArray] = None
+    advantages: Optional[npt.NDArray] = None
+    losses: Optional[npt.NDArray] = None
+    frames: Optional[npt.NDArray] = None
+
+    @classmethod
+    @field_validator("rewards", "advantages", "losses", "frames", mode="before")
+    def ensure_numpy_array(cls, v):
+        if v is not None and not isinstance(v, np.ndarray):
+            return np.array(v)
+        return v
 
 
 def save_experiment_details(

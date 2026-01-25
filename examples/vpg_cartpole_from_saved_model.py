@@ -39,6 +39,7 @@ def vpg_cartpole_from_saved_model(model_path: str, episodes: int) -> None:
             np._core.multiarray._reconstruct,
             np.dtype,
             np.dtypes.Float64DType,
+            np.dtypes.Float32DType,
             np.dtypes.UInt8DType,
         ]
     ):
@@ -52,6 +53,7 @@ def vpg_cartpole_from_saved_model(model_path: str, episodes: int) -> None:
         {
             "Episodes Returns": model_checkpoint.rewards.tolist(),
             "Episodes Losses": model_checkpoint.losses.tolist(),
+            "Episodes Advantages": model_checkpoint.advantages.tolist(),
         }
     )
     metrics_plotter.add_video_from_frames(
@@ -60,7 +62,7 @@ def vpg_cartpole_from_saved_model(model_path: str, episodes: int) -> None:
         fps=30,
         video_filename="sample_episode.mp4",
     )
-    print(f"Video saved, total framse: {len(model_checkpoint.frames)}")
+    print(f"Video saved, total frames: {len(model_checkpoint.frames)}")
 
     env = gymnasium.make("CartPole-v1", render_mode="human")
 

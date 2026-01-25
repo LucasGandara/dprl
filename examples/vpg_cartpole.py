@@ -42,9 +42,7 @@ else:
     default="reward_to_go",
     help="Advantage expression to use.",
 )
-def vpg_cartpole(
-    epochs: int, hidden_layer_units, lr, advantage_expression
-) -> torch.nn.Module:
+def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> None:
     """Train a VPG agent on CartPole."""
     assert advantage_expression in [
         e.value for e in AdvantageExpression
@@ -61,11 +59,12 @@ def vpg_cartpole(
     assert isinstance(env.observation_space, gymnasium.spaces.Box)
 
     input_size = env.observation_space.shape[0]
-    output_size = env.action_space.n
+    output_size = int(env.action_space.n)
 
     # 0.1 Variables to log
     trajectory_rewards_history = []
     trajectory_losses_history = []
+    trajectory_advantages_history = []
 
     # 1. Input: initial policy parameters theta(0), initial value function parameters phi(0)
     # Neutal network is going to replace the value function.
@@ -91,6 +90,7 @@ def vpg_cartpole(
             advantage_expression=AdvantageExpression(advantage_expression),
         )
         advantages = torch.as_tensor(advantages).to(device)
+        trajectory_advantages_history.append(advantages.cpu().numpy().sum())
 
         # 6. Estimate policy gradients
         log_values = torch.stack(trajectory.log_values).to(device)
@@ -121,7 +121,7 @@ def vpg_cartpole(
         policy = torch.distributions.Categorical(logits=value)
         action = policy.sample().item()
 
-        _, _, terminated, _, _ = env.step(action)
+        observation, _, terminated, _, _ = env.step(action)
         frame = env.render()
         frames.append(frame)
 
@@ -134,12 +134,12 @@ def vpg_cartpole(
         aditional_data={
             "rewards": np.array(trajectory_rewards_history),
             "losses": np.array(trajectory_losses_history),
+            "advantages": np.array(trajectory_advantages_history),
             "frames": np.array(frames),
         },
     )
 
     input("Press Enter to watch the trained agent...")
-
     env = gymnasium.make("CartPole-v1", render_mode="human")
     collect_trajectory(env, value_function, device=device)
 
