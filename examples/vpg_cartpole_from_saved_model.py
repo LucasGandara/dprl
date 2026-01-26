@@ -36,7 +36,7 @@ def vpg_cartpole_from_saved_model(model_path: str, episodes: int) -> None:
     with torch.serialization.safe_globals(
         [
             np.ndarray,
-            np._core.multiarray._reconstruct,
+            np._core.multiarray._reconstruct,  # type: ignore[attr-defined]
             np.dtype,
             np.dtypes.Float64DType,
             np.dtypes.Float32DType,
@@ -49,6 +49,7 @@ def vpg_cartpole_from_saved_model(model_path: str, episodes: int) -> None:
     assert model_checkpoint.rewards is not None
     assert model_checkpoint.losses is not None
     assert model_checkpoint.frames is not None
+    assert model_checkpoint.advantages is not None
     metrics_plotter.add_metrics_via_dict(
         {
             "Episodes Returns": model_checkpoint.rewards.tolist(),
@@ -66,8 +67,11 @@ def vpg_cartpole_from_saved_model(model_path: str, episodes: int) -> None:
 
     env = gymnasium.make("CartPole-v1", render_mode="human")
 
+    assert isinstance(env.observation_space, gymnasium.spaces.Box)
+    assert isinstance(env.action_space, gymnasium.spaces.Discrete)
+
     input_size = env.observation_space.shape[0]
-    output_size = env.action_space.n
+    output_size = int(env.action_space.n)
 
     value_function = create_value_function(input_size, output_size, 64).to(device)
     value_function.load_state_dict(model_checkpoint.policy_state_dict)

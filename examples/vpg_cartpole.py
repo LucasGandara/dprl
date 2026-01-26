@@ -8,13 +8,10 @@ After 500 epochs the agent performs well
 # Date: 2025-10-03
 """
 
-import pathlib
-
 import click
 import gymnasium
 import numpy as np
 import torch
-from moviepy.video.io import ImageSequenceClip
 
 from dprl.algorithms.vpg import AdvantageExpression, calculate_advantages
 from dprl.algorithms.vpg.vpg_utils import (
@@ -41,12 +38,11 @@ else:
     "--advantage-expression",
     default="reward_to_go",
     help="Advantage expression to use.",
+    type=click.Choice(AdvantageExpression, case_sensitive=False),
 )
 def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> None:
     """Train a VPG agent on CartPole."""
-    assert advantage_expression in [
-        e.value for e in AdvantageExpression
-    ], "Invalid advantage expression"
+    assert advantage_expression in AdvantageExpression, "Invalid advantage expression"
 
     print(f"VPG on Gymnasium CartPole-v1 with {hidden_layer_units} hidden layer units")
     print(f"Training for {epochs} epochs...")
@@ -87,7 +83,7 @@ def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> N
             trajectory.rewards,
             rewards_to_go,
             value_function,
-            advantage_expression=AdvantageExpression(advantage_expression),
+            advantage_expression=advantage_expression,
         )
         advantages = torch.as_tensor(advantages).to(device)
         trajectory_advantages_history.append(advantages.cpu().numpy().sum())

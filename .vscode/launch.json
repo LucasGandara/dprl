@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "vpg cartpole",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/vpg_cartpole.py",
+            "args": ["--epochs", "50",  "--hidden-layer-units", "32", "--lr", "0.01", "--advantage-expression", "reward_to_go"],
+            "console": "integratedTerminal"
+        }, 
+        {
             "name": "vpg cartpole from saved model",
             "type": "debugpy",
             "request": "launch",
