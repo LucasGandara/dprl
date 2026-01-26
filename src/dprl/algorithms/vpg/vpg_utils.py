@@ -48,13 +48,14 @@ def collect_trajectory(
     episode_return = 0.0
     rewards = []
     log_values = []
+    values = []
 
     while True:
         observation_as_tensor = torch.as_tensor(observation, dtype=torch.float32).to(
             device
         )
-        value = value_function(observation_as_tensor)
-        policy = torch.distributions.Categorical(logits=value)
+        logits = value_function(observation_as_tensor)
+        policy = torch.distributions.Categorical(logits=logits)
         action = policy.sample().item()
         log_probability_action = policy.log_prob(torch.as_tensor(action).to(device))
 
@@ -62,13 +63,14 @@ def collect_trajectory(
 
         log_values.append(log_probability_action.to("cpu"))
         rewards.append(float(reward))
+        values.append(logits[action].item())
 
         episode_return += float(reward)
 
         if done:
             break
 
-    return VPGTrajectory(rewards=rewards, log_values=log_values)
+    return VPGTrajectory(rewards=rewards, log_values=log_values, values=values)
 
 
 def calculate_rewards_to_go(rewards: list[float]) -> list[float]:

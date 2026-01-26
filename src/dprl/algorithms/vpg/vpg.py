@@ -1,7 +1,9 @@
 from collections import namedtuple
 from enum import Enum
 
-VPGTrajectory = namedtuple("VPGTrajectory", ["rewards", "log_values"])
+import numpy as np
+
+VPGTrajectory = namedtuple("VPGTrajectory", ["rewards", "log_values", "values"])
 
 
 class AdvantageExpression(Enum):
@@ -19,8 +21,9 @@ def calculate_advantages(
     """Calculate the advantages for a trajectory
 
     Args:
+        rewards (list[float]): List of rewards for a trajectory
         rewards_to_go (list[float]): List of rewards to go for a trajectory
-        value_function (torch.nn.Module): Value function to use for policy
+        values (list[float]): List of value estimates (logits of actions taken)
         advantage_expression (AdvantageExpression): Advantage expression to use
 
     Returns:
@@ -33,4 +36,4 @@ def calculate_advantages(
         case AdvantageExpression.REWARD_TO_GO:
             return rewards_to_go
         case AdvantageExpression.REWARD_TO_GO_BASELINED:
-            return rewards_to_go - values
+            return list(np.array(rewards_to_go) - np.array(values))

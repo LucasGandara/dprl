@@ -83,7 +83,7 @@ def vpg_fappy_bird(epochs, hidden_layer_units, lr, advantage_expression):
         advantages = calculate_advantages(
             trajectory.rewards,
             rewards_to_go,
-            value_function,
+            trajectory.values,
             advantage_expression=AdvantageExpression(advantage_expression),
         )
         advantages = torch.as_tensor(advantages).to(device)
