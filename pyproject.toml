@@ -35,6 +35,7 @@ dependencies = [
     "plotly>=6.5.2",
     "pandas>=2.3.3",
     "dash>=3.3.0",
+    "moviepy>=2.2.1",
 ]
 
 [project.optional-dependencies]
@@ -62,3 +63,7 @@ exclude = ["tests*"]
 
 [tool.setuptools.package-data]
 dprl = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

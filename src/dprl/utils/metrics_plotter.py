@@ -1,11 +1,19 @@
+import atexit
 import inspect
 import os
+import shutil
+import signal
 import threading
 
 import numpy as np
 import plotly.express as px
 from dash import Dash, dcc, html
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
+from rich.console import Console
+from rich.panel import Panel
+
+# Module-level console for error output
+_console = Console()
 
 
 class MetricsPlotter:
@@ -24,6 +32,11 @@ class MetricsPlotter:
         self.caller_dir = os.path.dirname(os.path.abspath(caller_file))
         assets_folder = os.path.join(self.caller_dir, "assets")
         self.dash_app = Dash(name="Metrics plotter", assets_folder=assets_folder)
+
+        # Cleanup tracking flags
+        self._assets_created: bool = False
+        self._cleanup_registered: bool = False
+        self._cleanup_done: bool = False
 
     def _create_metrics_figures(self) -> None:
         """Create figures for each metric."""
@@ -110,9 +123,13 @@ class MetricsPlotter:
         # Create the directory if it doesn't exist
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
+        # Mark that we created assets and register cleanup
+        self._assets_created = True
+        self._register_cleanup()
+
         # Validate the save path
         try:
-            with open(save_path, "wb") as f:
+            with open(save_path, "wb"):
                 pass  # Just to check if we can write
             os.remove(save_path)  # Remove the empty file
         except OSError as e:
@@ -144,3 +161,93 @@ class MetricsPlotter:
             target=self.dash_app.run(debug=False, use_reloader=False, port=8050)
         )
         dash_tread.start()
+
+    def _cleanup_assets(self) -> None:
+        """Remove the assets folder and all its contents.
+
+        This method is called automatically when the program exits or receives
+        a termination signal (SIGINT, SIGTERM). It is idempotent and safe to
+        call multiple times.
+
+        If cleanup fails (e.g., files are in use), an error message is displayed
+        with the path and instructions for manual deletion.
+        """
+        # Skip if we didn't create any assets
+        if not self._assets_created:
+            return
+
+        # Skip if cleanup already done (idempotent)
+        if self._cleanup_done:
+            return
+
+        assets_path = os.path.join(self.caller_dir, "assets")
+
+        # Skip if folder doesn't exist
+        if not os.path.exists(assets_path):
+            self._cleanup_done = True
+            return
+
+        try:
+            shutil.rmtree(assets_path)
+            self._cleanup_done = True
+        except (PermissionError, OSError):
+            # Display error message with path and instructions
+            self._display_cleanup_error(assets_path)
+            self._cleanup_done = True
+
+    def _display_cleanup_error(self, path: str) -> None:
+        """Display an error message when cleanup fails.
+
+        Args:
+            path: The path that could not be deleted.
+        """
+        _console.print(
+            Panel(
+                f"[bold red]Cleanup failed![/bold red]\n\n"
+                f"Could not delete: [yellow]{path}[/yellow]\n\n"
+                f"Please delete this folder manually.",
+                title="⚠️ Manual Action Required",
+                border_style="red",
+            )
+        )
+
+    def _register_cleanup(self) -> None:
+        """Register cleanup handlers for atexit and signals.
+
+        This method registers the cleanup function to run when:
+        - The program exits normally (atexit)
+        - Ctrl+C is pressed (SIGINT)
+        - The process is killed (SIGTERM)
+
+        Only registers once, even if called multiple times.
+        """
+        if self._cleanup_registered:
+            return
+
+        self._cleanup_registered = True
+
+        # Register with atexit for normal program exit
+        atexit.register(self._cleanup_assets)
+
+        # Store original signal handlers to call after cleanup
+        self._original_sigint = signal.getsignal(signal.SIGINT)
+        self._original_sigterm = signal.getsignal(signal.SIGTERM)
+
+        def signal_handler(signum: int, frame) -> None:
+            """Handle termination signals by cleaning up first."""
+            self._cleanup_assets()
+
+            # Call original handler if it exists and is callable
+            original = (
+                self._original_sigint if signum == signal.SIGINT else self._original_sigterm
+            )
+            if callable(original):
+                original(signum, frame)
+            elif original == signal.SIG_DFL:
+                # Re-raise with default handler
+                signal.signal(signum, signal.SIG_DFL)
+                os.kill(os.getpid(), signum)
+
+        # Register signal handlers
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
