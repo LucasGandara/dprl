@@ -57,8 +57,38 @@ Training scripts using Click CLI:
 - `vpg_flappy_bird.py`: VPG on custom FlappyBird environment
 - `vpg_cartpole_from_saved_model.py`: Load and visualize saved models
 
+## Testing
+
+```bash
+# Run all tests
+uv run pytest tests/
+
+# Run tests with verbose output
+uv run pytest tests/ -v
+
+# Run only unit tests
+uv run pytest tests/unit/
+
+# Run a specific test file
+uv run pytest tests/unit/test_metrics_plotter_cleanup.py
+
+# Run tests with coverage report
+uv run pytest tests/ --cov=dprl --cov-report=term-missing
+```
+
+Test files are located in `tests/` with subdirectories for different test types:
+- `tests/unit/`: Unit tests for individual components
+
 ## Development Workflow
 
 - Prefer using `uv` over pip/poetry for all package management
 - Experiment outputs are saved to `runs/` directory with timestamps
 - GPU support via PyTorch CUDA (auto-detected)
+
+## Active Technologies
+- Python 3.13 + Dash 3.3.0, Rich 14.2.0 (already in project), shutil (stdlib) (003-cleanup-assets-folder)
+- Local filesystem (assets folder in caller's directory) (003-cleanup-assets-folder)
+- Python 3.13 (per constitution) + Dash 3.3.0, Rich 14.2.0, shutil (stdlib) (003-cleanup-assets-folder)
+
+## Recent Changes
+- 003-cleanup-assets-folder: Added Python 3.13 + Dash 3.3.0, Rich 14.2.0 (already in project), shutil (stdlib)
