@@ -25,9 +25,13 @@ def create_value_function(
     """
 
     return torch.nn.Sequential(
-        torch.nn.Linear(in_features=input_size, out_features=hidden_layer_units),
+        torch.nn.Linear(
+            in_features=input_size, out_features=hidden_layer_units
+        ),
         torch.nn.ReLU(),
-        torch.nn.Linear(in_features=hidden_layer_units, out_features=output_size),
+        torch.nn.Linear(
+            in_features=hidden_layer_units, out_features=output_size
+        ),
     )
 
 
@@ -51,13 +55,15 @@ def collect_trajectory(
     values = []
 
     while True:
-        observation_as_tensor = torch.as_tensor(observation, dtype=torch.float32).to(
-            device
-        )
+        observation_as_tensor = torch.as_tensor(
+            observation, dtype=torch.float32
+        ).to(device)
         logits = value_function(observation_as_tensor)
         policy = torch.distributions.Categorical(logits=logits)
         action = policy.sample().item()
-        log_probability_action = policy.log_prob(torch.as_tensor(action).to(device))
+        log_probability_action = policy.log_prob(
+            torch.as_tensor(action).to(device)
+        )
 
         observation, reward, done, _, _ = env.step(action)
 
@@ -82,8 +88,8 @@ def calculate_rewards_to_go(rewards: list[float]) -> list[float]:
     Returns:
         list[float]: List of rewards to go for a trajectory
     """
-    rewards_to_go = []
-    running_add = 0
+    rewards_to_go: list[float] = []
+    running_add: float = 0.0
     for reward in reversed(rewards):
         running_add = reward * 0.99 + running_add
         rewards_to_go.append(running_add)

@@ -4,6 +4,7 @@ import os
 import shutil
 import signal
 import threading
+from typing import Any
 
 import numpy as np
 import plotly.express as px
@@ -20,18 +21,22 @@ class MetricsPlotter:
     """Class for plotting metrics over training episodes."""
 
     dash_app: Dash
-    metrics = {}
-    videos = {}
+    metrics: dict[str, Any] = {}
+    videos: dict[str, dict[str, Any]] = {}
     caller_dir: str
 
     def __init__(self) -> None:
         """Initialize the MetricsPlotter."""
         # Get the directory of the script that instantiated this class
-        caller_frame = inspect.currentframe().f_back
-        caller_file = caller_frame.f_code.co_filename
+        frame = inspect.currentframe()
+        if frame is None or frame.f_back is None:
+            raise RuntimeError("Cannot determine caller frame")
+        caller_file = frame.f_back.f_code.co_filename
         self.caller_dir = os.path.dirname(os.path.abspath(caller_file))
         assets_folder = os.path.join(self.caller_dir, "assets")
-        self.dash_app = Dash(name="Metrics plotter", assets_folder=assets_folder)
+        self.dash_app = Dash(
+            name="Metrics plotter", assets_folder=assets_folder
+        )
 
         # Cleanup tracking flags
         self._assets_created: bool = False
@@ -48,7 +53,9 @@ class MetricsPlotter:
                 title=f"{metric_name} over epochs",
             )
             self.dash_app.layout.append(
-                html.Div([html.H2(metric_name), html.Div(dcc.Graph(figure=fig))])
+                html.Div(
+                    [html.H2(metric_name), html.Div(dcc.Graph(figure=fig))]
+                )
             )
 
     def _create_videos_section(self) -> None:
@@ -133,7 +140,7 @@ class MetricsPlotter:
                 pass  # Just to check if we can write
             os.remove(save_path)  # Remove the empty file
         except OSError as e:
-            raise OSError(f"Invalid save path: {save_path}. Error: {e}")
+            raise OSError(f"Invalid save path: {save_path}. Error: {e}") from e
 
         frames_list = [frames[i] for i in range(frames.shape[0])]
         clip = ImageSequenceClip(frames_list, fps)
@@ -143,7 +150,9 @@ class MetricsPlotter:
         video_url = f"assets/{video_filename}"
         self.videos[name] = {"path": video_url, "fps": fps}
 
-    def add_metrics_via_dict(self, metrics_dict: dict[str, list[float]]) -> None:
+    def add_metrics_via_dict(
+        self, metrics_dict: dict[str, list[float]]
+    ) -> None:
         """Add multiple metrics to be plotted via a dictionary.
 
         Args:
@@ -239,7 +248,9 @@ class MetricsPlotter:
 
             # Call original handler if it exists and is callable
             original = (
-                self._original_sigint if signum == signal.SIGINT else self._original_sigterm
+                self._original_sigint
+                if signum == signal.SIGINT
+                else self._original_sigterm
             )
             if callable(original):
                 original(signum, frame)

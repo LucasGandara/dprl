@@ -11,6 +11,8 @@ def blitRotateCenter(surface, image, topleft, angle):
     :return: None
     """
     rotated_image = pygame.transform.rotate(image, angle)
-    new_rect = rotated_image.get_rect(center=image.get_rect(topleft=topleft).center)
+    new_rect = rotated_image.get_rect(
+        center=image.get_rect(topleft=topleft).center
+    )
 
     surface.blit(rotated_image, new_rect.topleft)

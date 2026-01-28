@@ -51,7 +51,9 @@ class SnakeEnv(gym.Env):
 
     def step(self, action):
         """Execute one step in the environment"""
-        observation, reward, terminated, truncated, info = self.game.take_action(action)
+        observation, reward, terminated, truncated, info = (
+            self.game.take_action(action)
+        )
 
         if self.render_mode == "human":
             self.render()

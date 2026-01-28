@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## Project Overview
 
@@ -84,11 +85,17 @@ Test files are located in `tests/` with subdirectories for different test types:
 - Prefer using `uv` over pip/poetry for all package management
 - Experiment outputs are saved to `runs/` directory with timestamps
 - GPU support via PyTorch CUDA (auto-detected)
+- Lines should not be larger than 80 character across all files.
 
 ## Active Technologies
 - Python 3.13 + Dash 3.3.0, Rich 14.2.0 (already in project), shutil (stdlib) (003-cleanup-assets-folder)
 - Local filesystem (assets folder in caller's directory) (003-cleanup-assets-folder)
 - Python 3.13 (per constitution) + Dash 3.3.0, Rich 14.2.0, shutil (stdlib) (003-cleanup-assets-folder)
+- Python ≥3.13 + Click ≥8.0.0 (CLI), PyYAML ≥6.0 (YAML parsing) (005-yaml-config)
+- Local filesystem (YAML config files) (005-yaml-config)
+- Python ≥3.13 + Click ≥8.0.0 (CLI), PyYAML ≥6.0 (parsing), (005-yaml-config)
+- Python ≥3.13 + Click ≥8.0.0, PyYAML ≥6.0, Pydantic, PyTorch (005-yaml-config)
+- Local filesystem (`runs/` directory) (005-yaml-config)
 
 ## Recent Changes
 - 003-cleanup-assets-folder: Added Python 3.13 + Dash 3.3.0, Rich 14.2.0 (already in project), shutil (stdlib)

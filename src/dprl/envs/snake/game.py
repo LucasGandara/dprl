@@ -51,13 +51,22 @@ class SnakeGame:
         head = self.snake[0]
 
         # Get danger in each direction relative to current direction
-        directions = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]
+        directions = [
+            Direction.UP,
+            Direction.RIGHT,
+            Direction.DOWN,
+            Direction.LEFT,
+        ]
         current_dir_idx = directions.index(self.direction)
 
         # Check danger: straight, right, left
         danger_straight = self._is_collision(head, self.direction)
-        danger_right = self._is_collision(head, directions[(current_dir_idx + 1) % 4])
-        danger_left = self._is_collision(head, directions[(current_dir_idx - 1) % 4])
+        danger_right = self._is_collision(
+            head, directions[(current_dir_idx + 1) % 4]
+        )
+        danger_left = self._is_collision(
+            head, directions[(current_dir_idx - 1) % 4]
+        )
 
         # Direction booleans
         dir_up = self.direction == Direction.UP
@@ -114,17 +123,19 @@ class SnakeGame:
             return True
 
         # Check body collision
-        if new_pos in self.snake:
-            return True
-
-        return False
+        return new_pos in self.snake
 
     def _update_direction(self, action):
         """Update direction based on action"""
         if action == 0:  # Continue straight
             return
 
-        directions = [Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT]
+        directions = [
+            Direction.UP,
+            Direction.RIGHT,
+            Direction.DOWN,
+            Direction.LEFT,
+        ]
         current_idx = directions.index(self.direction)
 
         if action == 1:  # Turn right
@@ -213,7 +224,13 @@ class SnakeGame:
         else:
             self.snake.pop()  # Remove tail if no food eaten
 
-        return self._get_observation(), reward, terminated, False, {"score": self.score}
+        return (
+            self._get_observation(),
+            reward,
+            terminated,
+            False,
+            {"score": self.score},
+        )
 
     def render(self, mode="human"):
         """Render the game"""
@@ -221,8 +238,12 @@ class SnakeGame:
             if self.screen is None:
                 pygame.init()
                 window_width = self.width * self.cell_size
-                window_height = self.height * self.cell_size + 50  # Extra space for UI
-                self.screen = pygame.display.set_mode((window_width, window_height))
+                window_height = (
+                    self.height * self.cell_size + 50
+                )  # Extra space for UI
+                self.screen = pygame.display.set_mode(
+                    (window_width, window_height)
+                )
                 pygame.display.set_caption("Snake Game")
                 self.clock = pygame.time.Clock()
                 self.font = pygame.font.Font(None, 32)
@@ -253,7 +274,9 @@ class SnakeGame:
 
             # Draw UI
             ui_y = self.height * self.cell_size + 10
-            score_text = self.font.render(f"Score: {self.score}", True, self.WHITE)
+            score_text = self.font.render(
+                f"Score: {self.score}", True, self.WHITE
+            )
             self.screen.blit(score_text, (10, ui_y))
 
             # Game over overlay
@@ -379,7 +402,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Play Snake manually")
     parser.add_argument("--width", type=int, default=20, help="Game width")
     parser.add_argument("--height", type=int, default=15, help="Game height")
-    parser.add_argument("--speed", type=int, default=8, help="Game speed (1-20)")
+    parser.add_argument(
+        "--speed", type=int, default=8, help="Game speed (1-20)"
+    )
 
     args = parser.parse_args()
     args.speed = max(1, min(20, args.speed))

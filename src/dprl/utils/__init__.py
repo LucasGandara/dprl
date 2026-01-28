@@ -5,12 +5,21 @@ Utility functions for deep reinforcement learning.
 import logging
 import random
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import torch
 
-from .experiment_logger import save_experiment_details
+from .config import (
+    BaseConfig,
+    config_option,
+    format_validation_error,
+    generate_config_option,
+)
+from .experiment_logger import (
+    load_config_from_experiment,
+    save_experiment_details,
+)
 from .metrics_plotter import MetricsPlotter
 
 
@@ -34,7 +43,7 @@ def set_seed(seed: int = 42):
 
 
 def setup_logging(
-    log_file: Optional[str] = None, level: str = "INFO"
+    log_file: str | None = None, level: str = "INFO"
 ) -> logging.Logger:
     """
     Set up logging configuration.
@@ -82,7 +91,7 @@ def count_parameters(model: torch.nn.Module) -> int:
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def save_config(config: Dict[str, Any], path: str):
+def save_config(config: dict[str, Any], path: str):
     """
     Save configuration to a YAML file.
 
@@ -98,7 +107,7 @@ def save_config(config: Dict[str, Any], path: str):
         yaml.dump(config, f, default_flow_style=False, indent=2)
 
 
-def load_config(path: str) -> Dict[str, Any]:
+def load_config(path: str) -> dict[str, Any]:
     """
     Load configuration from a YAML file.
 
@@ -110,8 +119,11 @@ def load_config(path: str) -> Dict[str, Any]:
     """
     import yaml
 
-    with open(path, "r") as f:
-        return yaml.safe_load(f)
+    with open(path) as f:
+        result = yaml.safe_load(f)
+        if result is None:
+            return {}
+        return dict(result)
 
 
 def get_device() -> torch.device:
@@ -130,13 +142,18 @@ def get_device() -> torch.device:
 
 
 __all__ = [
-    "set_seed",
-    "setup_logging",
+    "BaseConfig",
+    "config_option",
     "count_parameters",
-    "save_config",
-    "load_config",
+    "format_validation_error",
+    "generate_config_option",
     "get_device",
-    "save_experiment_details",
+    "load_config",
+    "load_config_from_experiment",
     "load_experiment_details",
     "MetricsPlotter",
+    "save_config",
+    "save_experiment_details",
+    "set_seed",
+    "setup_logging",
 ]

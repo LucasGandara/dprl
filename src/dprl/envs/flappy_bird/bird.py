@@ -8,7 +8,7 @@ current_file_path = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file_path)
 
 
-class Bird(object):
+class Bird:
     """
     Bird class representing the flappy bird
     """
@@ -17,7 +17,9 @@ class Bird(object):
     IMGS = [
         pygame.transform.scale2x(
             pygame.image.load(
-                os.path.join(current_directory, "assets", "imgs", f"bird{i}.png")
+                os.path.join(
+                    current_directory, "assets", "imgs", f"bird{i}.png"
+                )
             )
         )
         for i in range(1, 4)

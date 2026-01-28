@@ -41,7 +41,9 @@ class FlappyBird(gymnasium.Env):
 
         self.observation_space = gymnasium.spaces.Dict(
             {
-                "bird": gymnasium.spaces.Box(low=0, high=self.screen_height, dtype=int),
+                "bird": gymnasium.spaces.Box(
+                    low=0, high=self.screen_height, dtype=int
+                ),
                 "pipe_top": gymnasium.spaces.Box(
                     low=0, high=self.screen_height, dtype=int
                 ),
@@ -58,8 +60,12 @@ class FlappyBird(gymnasium.Env):
         # We have 2 actions, to swing or not to swing
         self.action_space = gymnasium.spaces.Discrete(2)
 
-        assert render_mode is None or render_mode in self.metadata["render_modes"]
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        assert (
+            render_mode is None or render_mode in self.metadata["render_modes"]
+        )
+        self.screen = pygame.display.set_mode(
+            (self.screen_width, self.screen_height)
+        )
 
         self.bird = Bird(230, 350, self.screen)
         self.base = Base(self.FLOOR)
@@ -141,7 +147,9 @@ class FlappyBird(gymnasium.Env):
         for pipe in self.pipes:
             pipe.draw(self.screen)
         self.bird.draw(self.screen)
-        score_label = self.font.render("Score: " + str(self.score), 1, (255, 255, 255))
+        score_label = self.font.render(
+            "Score: " + str(self.score), 1, (255, 255, 255)
+        )
         self.screen.blit(
             score_label, (self.screen_width - score_label.get_width() - 10, 10)
         )
@@ -175,7 +183,7 @@ class FlappyBird(gymnasium.Env):
                     ),
                     5,
                 )
-            except:
+            except (IndexError, AttributeError):
                 pass
 
         pygame.event.pump()
