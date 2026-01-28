@@ -11,9 +11,6 @@
         }
     },
 
-    "python.analysis.typeCheckingMode": "basic",
-
-    "ruff.lint.run": "onSave",
     "ruff.organizeImports": true,
     "ruff.fixAll": true,
 
