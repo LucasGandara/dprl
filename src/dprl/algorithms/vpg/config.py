@@ -36,7 +36,9 @@ class VPGConfig(BaseConfig):
         description="Number of units in the hidden layer",
     )
 
-    advantage_expression: Literal["total_reward", "reward_to_go", "baselined"] = Field(
+    advantage_expression: Literal[
+        "total_reward", "reward_to_go", "baselined"
+    ] = Field(
         default="reward_to_go",
         alias="advantage-expression",
         description="Advantage expression to use",

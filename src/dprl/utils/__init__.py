@@ -5,7 +5,7 @@ Utility functions for deep reinforcement learning.
 import logging
 import random
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -16,7 +16,10 @@ from .config import (
     format_validation_error,
     generate_config_option,
 )
-from .experiment_logger import load_config_from_experiment, save_experiment_details
+from .experiment_logger import (
+    load_config_from_experiment,
+    save_experiment_details,
+)
 from .metrics_plotter import MetricsPlotter
 
 
@@ -40,7 +43,7 @@ def set_seed(seed: int = 42):
 
 
 def setup_logging(
-    log_file: Optional[str] = None, level: str = "INFO"
+    log_file: str | None = None, level: str = "INFO"
 ) -> logging.Logger:
     """
     Set up logging configuration.
@@ -88,7 +91,7 @@ def count_parameters(model: torch.nn.Module) -> int:
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def save_config(config: Dict[str, Any], path: str):
+def save_config(config: dict[str, Any], path: str):
     """
     Save configuration to a YAML file.
 
@@ -104,7 +107,7 @@ def save_config(config: Dict[str, Any], path: str):
         yaml.dump(config, f, default_flow_style=False, indent=2)
 
 
-def load_config(path: str) -> Dict[str, Any]:
+def load_config(path: str) -> dict[str, Any]:
     """
     Load configuration from a YAML file.
 
@@ -116,7 +119,7 @@ def load_config(path: str) -> Dict[str, Any]:
     """
     import yaml
 
-    with open(path, "r") as f:
+    with open(path) as f:
         return yaml.safe_load(f)
 
 

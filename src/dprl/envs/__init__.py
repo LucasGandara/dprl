@@ -4,8 +4,9 @@ Environment utilities for deep reinforcement learning.
 This module provides utilities for creating, wrapping, and managing RL environments.
 """
 
+from typing import Any
+
 import gymnasium as gym
-from typing import Optional, Dict, Any
 import numpy as np
 
 
@@ -36,7 +37,7 @@ def make_env(env_name: str, render: bool = False, **kwargs) -> gym.Env:
         return env
 
     except gym.error.Error as e:
-        raise ValueError(f"Environment '{env_name}' not found: {e}")
+        raise ValueError(f"Environment '{env_name}' not found: {e}") from e
 
 
 def apply_wrappers(env: gym.Env, env_name: str) -> gym.Env:
@@ -53,7 +54,10 @@ def apply_wrappers(env: gym.Env, env_name: str) -> gym.Env:
     # Add environment-specific wrappers here
 
     # Example: Apply observation normalization for continuous control tasks
-    if any(name in env_name.lower() for name in ["pendulum", "mountaincar", "acrobot"]):
+    if any(
+        name in env_name.lower()
+        for name in ["pendulum", "mountaincar", "acrobot"]
+    ):
         env = NormalizeObservation(env)
 
     # Example: Apply action clipping for continuous action spaces
@@ -130,7 +134,7 @@ class RunningMeanStd:
         self.count = tot_count
 
 
-def get_env_info(env_name: str) -> Dict[str, Any]:
+def get_env_info(env_name: str) -> dict[str, Any]:
     """
     Get information about an environment.
 
@@ -172,13 +176,18 @@ def get_env_info(env_name: str) -> Dict[str, Any]:
 
 # Popular environment presets
 ENV_PRESETS = {
-    "classic_control": ["CartPole-v1", "MountainCar-v0", "Acrobot-v1", "Pendulum-v1"],
+    "classic_control": [
+        "CartPole-v1",
+        "MountainCar-v0",
+        "Acrobot-v1",
+        "Pendulum-v1",
+    ],
     "box2d": ["LunarLander-v2", "BipedalWalker-v3", "CarRacing-v2"],
     "atari": ["ALE/Breakout-v5", "ALE/Pong-v5", "ALE/SpaceInvaders-v5"],
 }
 
 
-def list_environments(category: Optional[str] = None) -> list:
+def list_environments(category: str | None = None) -> list:
     """
     List available environments.
 

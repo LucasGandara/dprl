@@ -57,7 +57,9 @@ class BaseConfig(BaseModel):
             try:
                 raw = yaml.safe_load(f) or {}
             except yaml.YAMLError as e:
-                raise yaml.YAMLError(f"YAML syntax error in '{path}': {e}") from e
+                raise yaml.YAMLError(
+                    f"YAML syntax error in '{path}': {e}"
+                ) from e
 
         return cls.model_validate(raw)
 
@@ -198,13 +200,15 @@ def config_option(config_class: type[BaseConfig]):
 
         try:
             config = config_class.load_from_yaml(path)
-        except FileNotFoundError:
-            raise click.BadParameter(f"Configuration file not found: {path}")
+        except FileNotFoundError as e:
+            raise click.BadParameter(
+                f"Configuration file not found: {path}"
+            ) from e
         except yaml.YAMLError as e:
-            raise click.BadParameter(str(e))
+            raise click.BadParameter(str(e)) from e
         except ValidationError as e:
             msg = format_validation_error(e, str(path), config_class)
-            raise click.BadParameter(msg)
+            raise click.BadParameter(msg) from e
 
         ctx.default_map = ctx.default_map or {}
         ctx.default_map.update(config.to_click_default_map())
