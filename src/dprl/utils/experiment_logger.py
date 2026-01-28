@@ -1,7 +1,8 @@
 import os
 import pickle
 from datetime import datetime
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -11,6 +12,9 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
+
+if TYPE_CHECKING:
+    from dprl.utils.config import BaseConfig
 
 BASE_DIR = "runs"
 
@@ -42,7 +46,17 @@ def save_experiment_details(
     policy: torch.nn.Module,
     aditional_data: dict[str, Optional[np.ndarray]] = {},
     name: str = "",
+    config: Optional["BaseConfig"] = None,
 ) -> None:
+    """
+    Save experiment checkpoint with optional configuration.
+
+    Args:
+        policy: The trained policy network.
+        aditional_data: Optional metrics (rewards, losses, etc.).
+        name: Experiment name prefix.
+        config: Optional config to save for reproducibility.
+    """
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     folder_name = f"{BASE_DIR}/exp_{name}_{timestamp}"
 
@@ -54,7 +68,13 @@ def save_experiment_details(
     save_dict.update({k: v for k, v in aditional_data.items() if v is not None})
 
     torch.save(save_dict, policy_path)
-    print(f"Experiment details saved in folder: {folder_name}")
+
+    # Save config if provided
+    if config is not None:
+        config_path = Path(folder_name) / "config.yaml"
+        config.to_yaml(config_path)
+
+    rich.print(f"[green]Experiment details saved in folder: {folder_name}[/green]")
 
 
 def load_experiment_details(path: str) -> CheckpointMetadata:
@@ -90,3 +110,27 @@ def load_experiment_details(path: str) -> CheckpointMetadata:
             )
         )
         exit(1)
+
+
+def load_config_from_experiment(
+    experiment_path: str,
+    config_class: type["BaseConfig"],
+) -> Optional["BaseConfig"]:
+    """
+    Load configuration from a saved experiment.
+
+    Args:
+        experiment_path: Path to experiment folder or policy.tar file.
+        config_class: The config class to use for validation.
+
+    Returns:
+        Loaded config if config.yaml exists, None otherwise.
+    """
+    folder = Path(experiment_path)
+    if folder.is_file():
+        folder = folder.parent
+
+    config_path = folder / "config.yaml"
+    if config_path.exists():
+        return config_class.load_from_yaml(config_path)
+    return None

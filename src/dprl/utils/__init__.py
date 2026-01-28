@@ -10,7 +10,13 @@ from typing import Any, Dict, Optional
 import numpy as np
 import torch
 
-from .experiment_logger import save_experiment_details
+from .config import (
+    BaseConfig,
+    config_option,
+    format_validation_error,
+    generate_config_option,
+)
+from .experiment_logger import load_config_from_experiment, save_experiment_details
 from .metrics_plotter import MetricsPlotter
 
 
@@ -130,13 +136,18 @@ def get_device() -> torch.device:
 
 
 __all__ = [
-    "set_seed",
-    "setup_logging",
+    "BaseConfig",
+    "config_option",
     "count_parameters",
-    "save_config",
-    "load_config",
+    "format_validation_error",
+    "generate_config_option",
     "get_device",
-    "save_experiment_details",
+    "load_config",
+    "load_config_from_experiment",
     "load_experiment_details",
     "MetricsPlotter",
+    "save_config",
+    "save_experiment_details",
+    "set_seed",
+    "setup_logging",
 ]

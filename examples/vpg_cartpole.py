@@ -13,13 +13,14 @@ import gymnasium
 import numpy as np
 import torch
 
-from dprl.algorithms.vpg import AdvantageExpression, calculate_advantages
+from dprl.algorithms.vpg import AdvantageExpression, VPGConfig, calculate_advantages
 from dprl.algorithms.vpg.vpg_utils import (
     calculate_rewards_to_go,
     collect_trajectory,
     create_value_function,
 )
 from dprl.utils import save_experiment_details
+from dprl.utils.config import config_option, generate_config_option
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 if device == "cuda":
@@ -29,6 +30,8 @@ else:
 
 
 @click.command()
+@config_option(VPGConfig)
+@generate_config_option(VPGConfig)
 @click.option("--epochs", default=50, help="Number of epochs to train for.")
 @click.option("--lr", default=0.001, help="Learning rate.")
 @click.option(
@@ -124,9 +127,17 @@ def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> N
         if terminated:
             done = True
 
+    config = VPGConfig(
+        epochs=epochs,
+        lr=lr,
+        hidden_layer_units=hidden_layer_units,
+        advantage_expression=advantage_expression,
+    )
+
     save_experiment_details(
         name="vpg",
         policy=value_function,
+        config=config,
         aditional_data={
             "rewards": np.array(trajectory_rewards_history),
             "losses": np.array(trajectory_losses_history),
