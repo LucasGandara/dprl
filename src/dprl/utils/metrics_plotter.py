@@ -4,6 +4,7 @@ import os
 import shutil
 import signal
 import threading
+from typing import Any
 
 import numpy as np
 import plotly.express as px
@@ -20,15 +21,17 @@ class MetricsPlotter:
     """Class for plotting metrics over training episodes."""
 
     dash_app: Dash
-    metrics = {}
-    videos = {}
+    metrics: dict[str, Any] = {}
+    videos: dict[str, dict[str, Any]] = {}
     caller_dir: str
 
     def __init__(self) -> None:
         """Initialize the MetricsPlotter."""
         # Get the directory of the script that instantiated this class
-        caller_frame = inspect.currentframe().f_back
-        caller_file = caller_frame.f_code.co_filename
+        frame = inspect.currentframe()
+        if frame is None or frame.f_back is None:
+            raise RuntimeError("Cannot determine caller frame")
+        caller_file = frame.f_back.f_code.co_filename
         self.caller_dir = os.path.dirname(os.path.abspath(caller_file))
         assets_folder = os.path.join(self.caller_dir, "assets")
         self.dash_app = Dash(

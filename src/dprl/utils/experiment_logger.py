@@ -67,7 +67,7 @@ def save_experiment_details(
     policy_path = os.path.join(folder_name, "policy.tar")
 
     # Build dict with policy and any provided optional data
-    save_dict = {"policy_state_dict": policy.state_dict()}
+    save_dict: dict[str, Any] = {"policy_state_dict": policy.state_dict()}
     save_dict.update({k: v for k, v in aditional_data.items() if v is not None})
 
     torch.save(save_dict, policy_path)

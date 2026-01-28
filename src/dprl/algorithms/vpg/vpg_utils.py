@@ -88,8 +88,8 @@ def calculate_rewards_to_go(rewards: list[float]) -> list[float]:
     Returns:
         list[float]: List of rewards to go for a trajectory
     """
-    rewards_to_go = []
-    running_add = 0
+    rewards_to_go: list[float] = []
+    running_add: float = 0.0
     for reward in reversed(rewards):
         running_add = reward * 0.99 + running_add
         rewards_to_go.append(running_add)

@@ -49,5 +49,5 @@ class VPGConfig(BaseConfig):
     def parse_advantage_expression(cls, v: Any) -> str:
         """Convert AdvantageExpression enum to string if needed."""
         if hasattr(v, "value"):
-            return v.value
-        return v
+            return str(v.value)
+        return str(v)

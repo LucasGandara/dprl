@@ -120,7 +120,10 @@ def load_config(path: str) -> dict[str, Any]:
     import yaml
 
     with open(path) as f:
-        return yaml.safe_load(f)
+        result = yaml.safe_load(f)
+        if result is None:
+            return {}
+        return dict(result)
 
 
 def get_device() -> torch.device:

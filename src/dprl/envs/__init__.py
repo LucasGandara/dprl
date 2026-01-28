@@ -163,7 +163,7 @@ def get_env_info(env_name: str) -> dict[str, Any]:
                 "high": getattr(env.action_space, "high", None),
                 "n": getattr(env.action_space, "n", None),
             },
-            "reward_range": env.reward_range,
+            "reward_range": getattr(env, "reward_range", None),
             "max_episode_steps": getattr(env, "_max_episode_steps", None),
         }
 
