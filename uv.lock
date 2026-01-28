@@ -233,6 +233,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "rich" },
     { name = "torch" },
+    { name = "tqdm" },
 ]
 
 [package.optional-dependencies]
@@ -271,6 +272,7 @@ requires-dist = [
     { name = "rich", specifier = ">=14.2.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
     { name = "torch", specifier = ">=2.0.0" },
+    { name = "tqdm", specifier = ">=4.66.0" },
 ]
 provides-extras = ["dev", "docs"]
 

@@ -36,6 +36,7 @@ dependencies = [
     "pandas>=2.3.3",
     "dash>=3.3.0",
     "moviepy>=2.2.1",
+    "tqdm>=4.66.0",
 ]
 
 [project.optional-dependencies]

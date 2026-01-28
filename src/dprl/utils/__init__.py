@@ -21,6 +21,7 @@ from .experiment_logger import (
     save_experiment_details,
 )
 from .metrics_plotter import MetricsPlotter
+from .training_logger import TrainingLogger
 
 
 def set_seed(seed: int = 42):
@@ -156,4 +157,5 @@ __all__ = [
     "save_experiment_details",
     "set_seed",
     "setup_logging",
+    "TrainingLogger",
 ]

@@ -44,6 +44,19 @@ class VPGConfig(BaseConfig):
         description="Advantage expression to use",
     )
 
+    progress_bar: bool = Field(
+        default=True,
+        alias="progress-bar",
+        description="Show TQDM progress bar during training",
+    )
+
+    table_log_freq: int = Field(
+        default=0,
+        ge=0,
+        alias="table-log-freq",
+        description="Log metrics table every N epochs (0 to disable)",
+    )
+
     @field_validator("advantage_expression", mode="before")
     @classmethod
     def parse_advantage_expression(cls, v: Any) -> str:
