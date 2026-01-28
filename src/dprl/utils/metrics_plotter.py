@@ -239,7 +239,9 @@ class MetricsPlotter:
 
             # Call original handler if it exists and is callable
             original = (
-                self._original_sigint if signum == signal.SIGINT else self._original_sigterm
+                self._original_sigint
+                if signum == signal.SIGINT
+                else self._original_sigterm
             )
             if callable(original):
                 original(signum, frame)
