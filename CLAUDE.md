@@ -96,6 +96,9 @@ Test files are located in `tests/` with subdirectories for different test types:
 - Python ≥3.13 + Click ≥8.0.0 (CLI), PyYAML ≥6.0 (parsing), (005-yaml-config)
 - Python ≥3.13 + Click ≥8.0.0, PyYAML ≥6.0, Pydantic, PyTorch (005-yaml-config)
 - Local filesystem (`runs/` directory) (005-yaml-config)
+- Python ≥3.13 + tqdm ≥4.66.0, Rich ≥14.0.0, Click ≥8.0.0 (007-tqdm-table-logging)
+- Terminal output (progress bars, tables) (007-tqdm-table-logging)
 
 ## Recent Changes
 - 003-cleanup-assets-folder: Added Python 3.13 + Dash 3.3.0, Rich 14.2.0 (already in project), shutil (stdlib)
+- 007-tqdm-table-logging: Added tqdm ≥4.66.0 for progress bars, Rich tables for metrics logging

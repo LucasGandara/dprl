@@ -23,7 +23,7 @@ from dprl.algorithms.vpg.vpg_utils import (
     create_value_function,
 )
 from dprl.envs.flappy_bird import FlappyBird
-from dprl.utils import save_experiment_details
+from dprl.utils import TrainingLogger, save_experiment_details
 from dprl.utils.config import config_option, generate_config_option
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -49,7 +49,25 @@ else:
     default="reward_to_go",
     help="Advantage expression to use.",
 )
-def vpg_fappy_bird(epochs, hidden_layer_units, lr, advantage_expression):
+@click.option(
+    "--progress-bar/--no-progress-bar",
+    default=True,
+    help="Show TQDM progress bar during training.",
+)
+@click.option(
+    "--table-log-freq",
+    default=0,
+    type=int,
+    help="Log metrics table every N epochs (0 to disable).",
+)
+def vpg_fappy_bird(
+    epochs: int,
+    hidden_layer_units: int,
+    lr: float,
+    advantage_expression: str,
+    progress_bar: bool,
+    table_log_freq: int,
+):
     """Train a VPG agent on Flappy Bird."""
     assert advantage_expression in [
         e.value for e in AdvantageExpression
@@ -80,32 +98,46 @@ def vpg_fappy_bird(epochs, hidden_layer_units, lr, advantage_expression):
     optimizer = torch.optim.Adam(value_function.parameters(), lr=lr)
 
     # 2. iteration
-    for epoch in range(epochs):
-        # 3: Collect a set of trajectories.
-        trajectory = collect_trajectory(env, value_function, device)
+    with TrainingLogger(
+        epochs=epochs,
+        progress_bar=progress_bar,
+        table_log_freq=table_log_freq,
+    ) as logger:
+        for epoch in range(epochs):
+            # 3: Collect a set of trajectories.
+            trajectory = collect_trajectory(env, value_function, device)
+            epoch_reward = sum(trajectory.rewards)
 
-        # 4. Calculate rewards to go
-        rewards_to_go = calculate_rewards_to_go(trajectory.rewards)
+            # 4. Calculate rewards to go
+            rewards_to_go = calculate_rewards_to_go(trajectory.rewards)
 
-        # 5. Compute Advantage estimates
-        advantages = calculate_advantages(
-            trajectory.rewards,
-            rewards_to_go,
-            trajectory.values,
-            advantage_expression=AdvantageExpression(advantage_expression),
-        )
-        advantages = torch.as_tensor(advantages).to(device)
+            # 5. Compute Advantage estimates
+            advantages = calculate_advantages(
+                trajectory.rewards,
+                rewards_to_go,
+                trajectory.values,
+                advantage_expression=AdvantageExpression(advantage_expression),
+            )
+            advantages = torch.as_tensor(advantages).to(device)
+            advantages_sum = float(advantages.cpu().numpy().sum())
 
-        # 6. Estimate policy gradients
-        log_values = torch.stack(trajectory.log_values).to(device)
-        loss = -torch.mean(log_values * advantages)
+            # 6. Estimate policy gradients
+            log_values = torch.stack(trajectory.log_values).to(device)
+            loss = -torch.mean(log_values * advantages)
 
-        # 7. Compute policy update
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
+            # 7. Compute policy update
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
 
-        print(f"Epoch {epoch}, steps: {len(trajectory.rewards)}, Loss: {loss.item()}")
+            # Update progress bar and optionally log table
+            logger.update(
+                epoch=epoch,
+                loss=loss.item(),
+                reward=epoch_reward,
+                steps=len(trajectory.rewards),
+                advantages=advantages_sum,
+            )
 
     # Construct config from effective CLI parameters for reproducibility
     config = VPGConfig(
@@ -113,6 +145,8 @@ def vpg_fappy_bird(epochs, hidden_layer_units, lr, advantage_expression):
         lr=lr,
         hidden_layer_units=hidden_layer_units,
         advantage_expression=advantage_expression,
+        progress_bar=progress_bar,
+        table_log_freq=table_log_freq,
     )
 
     save_experiment_details(

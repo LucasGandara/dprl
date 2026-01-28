@@ -13,13 +13,17 @@ import gymnasium
 import numpy as np
 import torch
 
-from dprl.algorithms.vpg import AdvantageExpression, VPGConfig, calculate_advantages
+from dprl.algorithms.vpg import (
+    AdvantageExpression,
+    VPGConfig,
+    calculate_advantages,
+)
 from dprl.algorithms.vpg.vpg_utils import (
     calculate_rewards_to_go,
     collect_trajectory,
     create_value_function,
 )
-from dprl.utils import save_experiment_details
+from dprl.utils import TrainingLogger, save_experiment_details
 from dprl.utils.config import config_option, generate_config_option
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -43,7 +47,25 @@ else:
     help="Advantage expression to use.",
     type=click.Choice(AdvantageExpression, case_sensitive=False),
 )
-def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> None:
+@click.option(
+    "--progress-bar/--no-progress-bar",
+    default=True,
+    help="Show TQDM progress bar during training.",
+)
+@click.option(
+    "--table-log-freq",
+    default=0,
+    type=int,
+    help="Log metrics table every N epochs (0 to disable).",
+)
+def vpg_cartpole(
+    epochs: int,
+    hidden_layer_units: int,
+    lr: float,
+    advantage_expression,
+    progress_bar: bool,
+    table_log_freq: int,
+) -> None:
     """Train a VPG agent on CartPole."""
     assert advantage_expression in AdvantageExpression, "Invalid advantage expression"
 
@@ -73,38 +95,52 @@ def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> N
     optimizer = torch.optim.Adam(value_function.parameters(), lr=lr)
 
     # 2. iteration
-    for epoch in range(epochs):
-        # 3: Collect a set of trajectories.
-        trajectory = collect_trajectory(env, value_function, device)
-        trajectory_rewards_history.append(np.sum(trajectory.rewards))
+    with TrainingLogger(
+        epochs=epochs,
+        progress_bar=progress_bar,
+        table_log_freq=table_log_freq,
+    ) as logger:
+        for epoch in range(epochs):
+            # 3: Collect a set of trajectories.
+            trajectory = collect_trajectory(env, value_function, device)
+            epoch_reward = np.sum(trajectory.rewards)
+            trajectory_rewards_history.append(epoch_reward)
 
-        # 4. Calculate rewards to go
-        rewards_to_go = calculate_rewards_to_go(trajectory.rewards)
+            # 4. Calculate rewards to go
+            rewards_to_go = calculate_rewards_to_go(trajectory.rewards)
 
-        # 5. Compute Advantage estimates
-        advantages = calculate_advantages(
-            trajectory.rewards,
-            rewards_to_go,
-            trajectory.values,
-            advantage_expression=advantage_expression,
-        )
-        advantages = torch.as_tensor(advantages).to(device)
-        trajectory_advantages_history.append(advantages.cpu().numpy().sum())
+            # 5. Compute Advantage estimates
+            advantages = calculate_advantages(
+                trajectory.rewards,
+                rewards_to_go,
+                trajectory.values,
+                advantage_expression=advantage_expression,
+            )
+            advantages = torch.as_tensor(advantages).to(device)
+            advantages_sum = advantages.cpu().numpy().sum()
+            trajectory_advantages_history.append(advantages_sum)
 
-        # 6. Estimate policy gradients
-        log_values = torch.stack(trajectory.log_values).to(device)
-        loss = -torch.mean(log_values * advantages)
-        trajectory_losses_history.append(loss.item())
+            # 6. Estimate policy gradients
+            log_values = torch.stack(trajectory.log_values).to(device)
+            loss = -torch.mean(log_values * advantages)
+            trajectory_losses_history.append(loss.item())
 
-        # 7. Compute policy update
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
+            # 7. Compute policy update
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
 
-        print(f"Epoch {epoch}, steps: {len(trajectory.rewards)}, Loss: {loss.item()}")
+            # Update progress bar and optionally log table
+            logger.update(
+                epoch=epoch,
+                loss=loss.item(),
+                reward=epoch_reward,
+                steps=len(trajectory.rewards),
+                advantages=advantages_sum,
+            )
 
-        if len(trajectory.rewards) > 5000:
-            break
+            if len(trajectory.rewards) > 5000:
+                break
 
     env = gymnasium.make("CartPole-v1", render_mode="rgb_array")
 
@@ -132,6 +168,8 @@ def vpg_cartpole(epochs: int, hidden_layer_units, lr, advantage_expression) -> N
         lr=lr,
         hidden_layer_units=hidden_layer_units,
         advantage_expression=advantage_expression,
+        progress_bar=progress_bar,
+        table_log_freq=table_log_freq,
     )
 
     save_experiment_details(
